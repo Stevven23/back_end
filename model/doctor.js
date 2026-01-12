@@ -30,6 +30,9 @@ const DoctorSchema = new mongoose.Schema({
   },
   totalSalary: {
     type: Number
+  },
+  monthlyIncome: {        
+    type: Number
   }
 });
 

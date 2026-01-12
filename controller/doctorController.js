@@ -2,36 +2,29 @@ import Doctor from '../model/doctor.js';
 
 // CREATE
 export const createDoctor = async (req, res) => {
-  try {
-    const d = req.body;
+  const d = req.body;
 
-    // Rule 1: base salary + worked hours
-    let totalSalary = d.baseSalary + d.workedHours * 10;
+  // Rule 1: base salary + worked hours
+  let totalSalary = d.baseSalary + d.workedHours * 10;
 
-    // Rule 2: bonus by number of patients
-    if (d.patientsAttended > 50) {
-      totalSalary *= 1.15;
-    }
-
-    // Rule 3: active status
-    d.active = d.workedHours >= 20;
-
-    // Rule 4: monthly income (calculation only)
-    const monthlyIncome = d.patientsAttended * d.consultationFee;
-
-    d.totalSalary = totalSalary;
-
-    const doctor = await Doctor.create(d);
-
-    res.status(201).json({ doctor, monthlyIncome });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      message: 'Error creating doctor',
-      error: error.message
-    });
+  // Rule 2: bonus by number of patients
+  if (d.patientsAttended > 50) {
+    totalSalary *= 1.15;
   }
+
+  // Rule 3: active status
+  d.active = d.workedHours >= 20;
+
+  // Rule 4: monthly income (NOW STORED)
+  d.monthlyIncome = d.patientsAttended * d.consultationFee;
+
+  d.totalSalary = totalSalary;
+
+  const doctor = await Doctor.create(d);
+
+  res.json(doctor);
 };
+
 
 // READ ALL
 export const getDoctors = async (req, res) => {
@@ -55,26 +48,27 @@ export const getDoctorById = async (req, res) => {
 
 // UPDATE
 export const updateDoctor = async (req, res) => {
-  try {
-    const d = req.body;
+  const d = req.body;
 
-    let totalSalary = d.baseSalary + d.workedHours * 10;
-    if (d.patientsAttended > 50) totalSalary *= 1.15;
+  let totalSalary = d.baseSalary + d.workedHours * 10;
+  if (d.patientsAttended > 50) totalSalary *= 1.15;
 
-    d.active = d.workedHours >= 20;
-    d.totalSalary = totalSalary;
+  d.active = d.workedHours >= 20;
 
-    const doctor = await Doctor.findByIdAndUpdate(
-      req.params.id,
-      d,
-      { new: true }
-    );
+  // Rule 4 recalculated
+  d.monthlyIncome = d.patientsAttended * d.consultationFee;
 
-    res.json(doctor);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+  d.totalSalary = totalSalary;
+
+  const doctor = await Doctor.findByIdAndUpdate(
+    req.params.id,
+    d,
+    { new: true }
+  );
+
+  res.json(doctor);
 };
+
 
 // DELETE
 export const deleteDoctor = async (req, res) => {
